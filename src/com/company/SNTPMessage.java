@@ -1,8 +1,5 @@
 package com.company;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Calendar;
 
 import static java.lang.System.*;
 
@@ -16,18 +13,9 @@ public class SNTPMessage {
     private short pollInterval = 0;
     private byte precision = 0;
 
-    //rootDelay 32-bit signed fixed-point number
-    //fraction point between bits 15 and 16
-    //
-    // 0000 0000 0000 0000 . 0000 0000 0000 0000
-    //
     private double rootDelay = 0;
     private double rootDispersion = 0;
 
-    //Reference identifier
-    //32bit sträng, 4 ascii-tecken
-    //80,  80, 83,   0,
-    //P    P    S
     private byte[] referenceIdentifier = {0, 0, 0, 0};
 
     private double referenceTimestamp = 0;
@@ -38,55 +26,14 @@ public class SNTPMessage {
 
     public SNTPMessage(byte[] buf) {
         byte b = buf[0];
-        // b = 36
-        //  0 1  2 3 4 5 6 7
-        // |LI |  VN  | Mode |
-        //  0 0 1 0 0  1 0 0
-        //   0    4      4
-        //
+
         leapIndicator = (byte)((b>>6) & 0x3);
-       //out.println("Leapindicator = " + leapIndicator);
-        // 00100100
-        // >> shiftar alla bits 6 steg till höger
-        // 0001 0010
-        // 0000 1001
-        // 0000 0100
-        // 0000 0010
-        // 0000 0001
-        // 0000 0000 Resultatet av b>>6
-        // 0x3? -> 0000 0011
-        // 36 decimalt -> 24 hex -> 0010 0100
-        //
         versionNumber = (byte)((b>>3) & 0x7);
-       // out.println("VersionNumber = " + versionNumber);
-        // shifta 3 steg till höger
-        // 0010 0100 -> 0000 0100
-        // & 0x7 ?
-        // 0000 0100 & 0000 0111
-        //
-        // 0000 0100
-        // 0000 0111
-        // 0000 0100
-
         mode = (byte)(b & 0x7);
-       // out.println("Mode = " + mode);
-        // 0010 0100
-        // 0000 0111
-        // 0000 0100 -> 4
-
         stratum = unsignedByteToShort(buf[1]);
-       // out.println("Stratum = " + stratum);
         pollInterval = unsignedByteToShort(buf[2]);
-        //out.println("PollInterval = " + pollInterval);
         precision = buf[3];
-        //out.println("precision = " + precision);
 
-        //Vi får datan för root delay som 4 bytes d.v.s. 32 bits i en följd
-        // 1000 0100 0110 0010 | 0110 0100 1000 1001
-        //     33890
-        // buf[4] = 132
-        // buf[5] = 98
-        //
         rootDelay = (buf[4] * 256.0)
                 + unsignedByteToShort(buf[5])
                 + (unsignedByteToShort(buf[6]) / (0xff+1.0))
@@ -97,9 +44,6 @@ public class SNTPMessage {
                 + (unsignedByteToShort(buf[10]) / (0xff+1.0)) //256 0xff+1
                 + (unsignedByteToShort(buf[11]) / (0xffff+1.0)); //0xffff+1
 
-        //0101 0000 | 0101 0000 | 0101 0011 | 0000 0000
-        // 80           80         83          0
-        //ASCII PPS
         referenceIdentifier[0] = buf[12];
         referenceIdentifier[1] = buf[13];
         referenceIdentifier[2] = buf[14];
@@ -126,11 +70,7 @@ public class SNTPMessage {
     }
 
     private short unsignedByteToShort(byte b) {
-        //Exempel b = 1101 1001, översta biten är satt och java tolkar som ett negativt tal
-        //Kolla om översta biten är satt genom bitvis and med 0x80 eller 1000 0000
         if((b & 0x80) == 0x80){
-            // 0x80 = 1000 0000
-            // 1101 1001
             return (short)(128 + (b & 0x7f));
         }
         return (short) b;
@@ -139,21 +79,6 @@ public class SNTPMessage {
     public byte[] toByteArray() {
         byte [] array = new byte[48];
         array[0] = (byte)(leapIndicator << 6 | versionNumber << 3 | mode);
-        //
-        // LI == 0
-        // 00 << 6 -> 0000 0000
-        // versionNumber == 4
-        // 0100 << 3 -> 0010 0000
-        // mode == 3
-        // 0011   -> 0000 0011
-        //Med bitvis eller
-        //  0000 0000
-        //  0010 0000
-        // |0000 0011
-        //--------------
-        //  0010 0011
-        // |LI |  VN  | Mode |
-        //  0 0 1 0 0  0 1 1
         array[1] = (byte) stratum;
         array[2] = (byte) pollInterval;
         array[3] = precision;
@@ -190,6 +115,7 @@ public class SNTPMessage {
         }
     }
 
+    //TODO implementera metoden toString i SNTPMessage så att vi kan skriva ut vårt meddelande med de olika fälten
     public String toString(){
         out.println("leapIndicator: " + leapIndicator);
         out.println("versionNumber = " + versionNumber);
@@ -206,6 +132,7 @@ public class SNTPMessage {
         out.println("transmitTimestamp = " + transmitTimestamp);
         out.println("");
 
+        //TODO räkna ut offseten mellan datorns klocka och tidsservern, se RFC
         out.println("----Times----");
 
         new java.util.Date();
@@ -224,17 +151,6 @@ public class SNTPMessage {
         out.println("'(d)' delay : "+ d);
         out.println("'(t)' clock off set : "+t);
 
-
-        //out.println((((currentTimeMillis() / 1000.0) + 2208988800.0 + "-" + " datorns"))
-        //out.println(receiveTimestamp + "-" + " recievedTimestamp");
-        //out.println(transmitTimestamp + "-" + " transmitTimestamp");
-
-
-
-        //LI: 0
-        //Verions: 4
-        //referenceIdentifier: PPS
-        //..
         return "";
     }
 }
