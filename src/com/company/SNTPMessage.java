@@ -7,7 +7,7 @@ public class SNTPMessage {
 
     private byte leapIndicator = 0;
     private byte versionNumber = 4;
-    private byte mode = 0;
+    byte mode = 0;
 
     private short stratum = 0;
     private short pollInterval = 0;
@@ -115,7 +115,18 @@ public class SNTPMessage {
         }
     }
 
-    //TODO implementera metoden toString i SNTPMessage så att vi kan skriva ut vårt meddelande med de olika fälten.
+
+    public double getOriginateTimestamp() {
+        return originateTimestamp;
+    }
+
+    public double getReceiveTimestamp() {
+        return receiveTimestamp;
+    }
+
+    public double getTransmitTimestamp() {
+        return transmitTimestamp;
+    }
 
     public String toString() {
         out.println("leapIndicator: " + leapIndicator);
@@ -133,25 +144,10 @@ public class SNTPMessage {
         out.println("transmitTimestamp = " + transmitTimestamp);
         out.println("");
 
-        //TODO räkna ut offseten mellan datorns klocka och tidsservern, se RFC.
-
-        out.println("----Times----");
 
         new java.util.Date();
         System.currentTimeMillis();
-        double T1 = Double.parseDouble(String.valueOf(originateTimestamp));
-        double T2 = Double.parseDouble(String.valueOf(receiveTimestamp));
-        double T3 = Double.parseDouble(String.valueOf(transmitTimestamp));
-        //double T4 = Double.parseDouble(String.valueOf(referenceTimestamp));
-        double T4 = (currentTimeMillis() / 1000.0) + 2208988800.0;
 
-        out.println("");
-
-        double d = ((T4 - T1) - (T3 - T2));
-        double t = ((T2 - T1) + (T3 - T4)) / 2;
-
-        out.println("'(d)' delay : " + d);
-        out.println("'(t)' clock off set : " + t);
 
         return "";
     }

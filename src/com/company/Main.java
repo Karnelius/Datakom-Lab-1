@@ -3,9 +3,11 @@ package com.company;
 import java.io.IOException;
 import java.net.*;
 
+import static java.lang.System.currentTimeMillis;
+import static java.lang.System.out;
+
 public class Main {
 
-    //TODO utöka koden så att den försöker ansluta till en annan server om anslutningen misslyckas
 
     public static InetAddress inetAdressServerList(String[] serverList) {
         InetAddress address = null;
@@ -43,18 +45,30 @@ public class Main {
             socket.send(packet);
             System.out.println("Sent request");
             socket.receive(packet);
+            double T4 = (currentTimeMillis() / 1000.0) + 2208988800.0;
             SNTPMessage response = new SNTPMessage(packet.getData());
             System.out.println("Got reply");
+
+            out.println("----Times----");
+            double T1 = response.getOriginateTimestamp();
+            double T2 = response.getReceiveTimestamp();
+            double T3 = response.getTransmitTimestamp();
+
+            double d = ((T4 - T1) - (T3 - T2));
+            double t = ((T2 - T1) + (T3 - T4)) / 2;
+
+            System.out.println("'(d)' delay : " + d);
+            System.out.println("'(t)' clock off set : " + t);
             System.out.println("---------");
+
             socket.close();
-            // System.out.println(response);
-            response.toString();
+            System.out.println(response);
+
+
 
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
-
 }
