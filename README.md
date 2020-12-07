@@ -1,2 +1,2 @@
-# Datakom-Lab-2
+# Datakom-Lab-1
 Build and implement an SNTP Message
