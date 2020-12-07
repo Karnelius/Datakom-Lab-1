@@ -8,14 +8,13 @@ import static java.lang.System.out;
 
 public class Main {
 
-
     public static InetAddress inetAddressServerList(String[] serverList) {
         InetAddress address = null;
         for (String i : serverList) {
             try {
                 address = InetAddress.getByName(i);
                 break;
-            } catch (UnknownHostException e) {
+            } catch (IOException e) {
                 System.out.println(e.getMessage());
             }
         }
@@ -57,15 +56,12 @@ public class Main {
             double d = ((T4 - T1) - (T3 - T2));
             double t = ((T2 - T1) + (T3 - T4)) / 2;
 
-            System.out.println("'(d)' delay : " + d);
-            System.out.println("'(t)' clock off set : " + t);
-            System.out.println("---------");
+            System.out.println("delay : " + d);
+            System.out.println("clock off set : " + t);
+            System.out.println("----SNTPMessage----");
 
             socket.close();
-            System.out.println(response);
-
-
-
+            System.out.println(response.toString());
 
         } catch (IOException e) {
             e.printStackTrace();

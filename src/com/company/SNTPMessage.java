@@ -7,7 +7,7 @@ public class SNTPMessage {
 
     private byte leapIndicator = 0;
     private byte versionNumber = 4;
-    byte mode = 0;
+    byte mode;
 
     private short stratum = 0;
     private short pollInterval = 0;
@@ -16,12 +16,12 @@ public class SNTPMessage {
     private double rootDelay = 0;
     private double rootDispersion = 0;
 
-    private byte[] referenceIdentifier = {0, 0, 0, 0};
+    private final byte[] referenceIdentifier = {0, 0, 0, 0};
 
     private double referenceTimestamp = 0;
     private double originateTimestamp = 0;
     private double receiveTimestamp = 0;
-    private double transmitTimestamp = 0;
+    private final double transmitTimestamp;
 
 
     public SNTPMessage(byte[] buf) {
@@ -41,8 +41,8 @@ public class SNTPMessage {
 
         rootDispersion = (buf[8] * 256.0)
                 + unsignedByteToShort(buf[9])
-                + (unsignedByteToShort(buf[10]) / (0xff + 1.0)) //256 0xff+1
-                + (unsignedByteToShort(buf[11]) / (0xffff + 1.0)); //0xffff+1
+                + (unsignedByteToShort(buf[10]) / (0xff + 1.0))
+                + (unsignedByteToShort(buf[11]) / (0xffff + 1.0));
 
         referenceIdentifier[0] = buf[12];
         referenceIdentifier[1] = buf[13];
@@ -73,7 +73,7 @@ public class SNTPMessage {
         if ((b & 0x80) == 0x80) {
             return (short) (128 + (b & 0x7f));
         }
-        return (short) b;
+        return b;
     }
 
     public byte[] toByteArray() {
@@ -111,10 +111,52 @@ public class SNTPMessage {
     private void doubleToByteArray(byte[] array, int index, double data) {
         for (int i = 0; i < 8; i++) {
             array[index + i] = (byte) (data / Math.pow(2, (3 - i) * 8));
-            data -= (double) (unsignedByteToShort(array[index + i]) * Math.pow(2, (3 - i) * 8));
+            data -= (unsignedByteToShort(array[index + i]) * Math.pow(2, (3 - i) * 8));
         }
     }
 
+    public String toString() {
+        return  "LeapIndicator = " + leapIndicator + "\n" +
+                "Version number = " + versionNumber + "\n" +
+                "Mode= " + mode + "\n" +
+                "Stratum = " + stratum + "\n" +
+                "Poll interval = " + pollInterval + "\n" +
+                "Precision = " + precision + "\n" +
+                "Root delay = " + rootDelay + "\n" +
+                "Root dispersion = " + rootDispersion + "\n" +
+                "Reference identifier = " + referenceIdentifierToString(referenceIdentifier, stratum, versionNumber) + "\n" +
+                "Reference timestamp = " + referenceTimestamp + "\n" +
+                "Originate timestamp = " + originateTimestamp + "\n" +
+                "Receive timestamp = " + receiveTimestamp + "\n" +
+                "Transmit timestamp = " + transmitTimestamp + "\n";
+
+    }
+
+    public String referenceIdentifierToString(byte[] ref, short stratum, byte version) {
+
+        if(stratum==0 || stratum==1)
+        {
+            return new String(ref);
+        }
+
+        else if(version==3)
+        {
+            return unsignedByteToShort(ref[0]) + "." +
+                    unsignedByteToShort(ref[1]) + "." +
+                    unsignedByteToShort(ref[2]) + "." +
+                    unsignedByteToShort(ref[3]);
+        }
+
+        else if(version==4)
+        {
+            return "" + ((unsignedByteToShort(ref[0]) / 256.0) +
+                    (unsignedByteToShort(ref[1]) / 65536.0) +
+                    (unsignedByteToShort(ref[2]) / 16777216.0) +
+                    (unsignedByteToShort(ref[3]) / 4294967296.0));
+        }
+
+        return "";
+    }
 
     public double getOriginateTimestamp() {
         return originateTimestamp;
@@ -128,27 +170,5 @@ public class SNTPMessage {
         return transmitTimestamp;
     }
 
-    public String toString() {
-        out.println("leapIndicator: " + leapIndicator);
-        out.println("versionNumber = " + versionNumber);
-        out.println("mode = " + mode);
-        out.println("Stratum = " + stratum);
-        out.println("PollInterval = " + pollInterval);
-        out.println("precision = " + precision);
-        out.println("rootDelay = " + rootDelay);
-        out.println("rootDispersion = " + rootDispersion);
-        //out.println("referenceIdentifier = " + referenceIdentifier);
-        out.println("referenceTimestamp = " + referenceTimestamp);
-        out.println("originateTimestamp = " + originateTimestamp);
-        out.println("receiveTimestamp = " + receiveTimestamp);
-        out.println("transmitTimestamp = " + transmitTimestamp);
-        out.println("");
-
-
-        new java.util.Date();
-        System.currentTimeMillis();
-
-
-        return "";
-    }
 }
+
