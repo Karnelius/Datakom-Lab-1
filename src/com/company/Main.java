@@ -9,7 +9,7 @@ import static java.lang.System.out;
 public class Main {
 
 
-    public static InetAddress inetAdressServerList(String[] serverList) {
+    public static InetAddress inetAddressServerList(String[] serverList) {
         InetAddress address = null;
         for (String i : serverList) {
             try {
@@ -37,7 +37,7 @@ public class Main {
         try {
 
             DatagramSocket socket = new DatagramSocket();
-            InetAddress address = inetAdressServerList(serverList);
+            InetAddress address = inetAddressServerList(serverList);
             SNTPMessage message = new SNTPMessage();
             byte[] buf = message.toByteArray();
             DatagramPacket packet = new DatagramPacket(buf, buf.length, address, 123);
