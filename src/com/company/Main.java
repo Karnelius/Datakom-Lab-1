@@ -6,6 +6,7 @@ import java.net.*;
 public class Main {
 
     //TODO utöka koden så att den försöker ansluta till en annan server om anslutningen misslyckas
+
     public static InetAddress inetAdressServerList(String[] serverList) {
         InetAddress address = null;
         for (String i : serverList) {
@@ -53,5 +54,7 @@ public class Main {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
+
 }
